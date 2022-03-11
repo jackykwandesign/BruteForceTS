@@ -1,4 +1,4 @@
-let password = "acb"
+let password = "qwe54"
 const alphabetLower = "abcdefghijklmnopqrstuvwxyz"
 const alphabetUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const numbers = "0123456789"
@@ -26,25 +26,33 @@ const guessPassword:PasswordGuessFnc= async (_words:number[]) =>{
     return await timeConsumeTask(_password)
 }
 
-const BruteForce = async (_baseDigit:number, passwordGuessFnc:PasswordGuessFnc) => {
-    console.log("passwordGuessFnc", passwordGuessFnc)
-	console.log("guessLetterList", guessLetterList)
-	console.log("base", base)
+const BruteForce = async (letterList:string, minLength:number, maxLength:number, passwordGuessFnc:PasswordGuessFnc) => {
+	console.log("letterList", letterList)
+    const baseDigit = letterList.length
+	console.log("baseDigit", baseDigit)
 
     let isFinish = false
-	let minWidth = 3
-	let maxWidth = 3
 
+    // check length
+    if(minLength < 1 || maxLength < 1 || maxLength < minLength){
+        throw Error("Length error")
+    }
 	for (
-		let totalCharacters = minWidth;
-		totalCharacters <= maxWidth;
+		let totalCharacters = minLength;
+		totalCharacters <= maxLength;
 		totalCharacters++
 	) {
+        //break when finish 
+        if(isFinish){
+            break
+        }
+
 		// totalCharacters is number of character to guess
 		let words = new Array(totalCharacters).fill(0)
 		console.log("totalCharacters", totalCharacters)
         
 		const loop = async (_totalDigit: number, _currentDigit: number, _base:number) => {
+            
 			for (let i = 0; i < _base; i++) {
                 words[_currentDigit] = i
 
@@ -58,8 +66,6 @@ const BruteForce = async (_baseDigit:number, passwordGuessFnc:PasswordGuessFnc) 
                     // console.log("After clear words", words);
 				}else{
                     // guess password here
-                    let tempPassword = _convertWordsToPassword(words)
-                    console.log(words, tempPassword)
                     const result = await passwordGuessFnc(words)
                     if(result){
                         console.log("Finish")
@@ -72,11 +78,15 @@ const BruteForce = async (_baseDigit:number, passwordGuessFnc:PasswordGuessFnc) 
                 }
 			}
 		}
-		await loop(totalCharacters, 0, _baseDigit)
+		await loop(totalCharacters, 0, baseDigit)
 	}
     !isFinish && console.log("Brute Force Failed")
 }
 
-console.time("BruteForce")
-BruteForce(base, guessPassword)
-console.timeEnd("BruteForce")
+const main = async () =>{
+    console.time("BruteForce")
+    await BruteForce(guessLetterList, 3,5, guessPassword)
+    console.timeEnd("BruteForce")
+}
+
+main()
